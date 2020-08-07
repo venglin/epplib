@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/contact-2.1"
+           xmlns:contact="http://www.dns.pl/nask-epp-schema/contact-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Extensible Provisioning Protocol v2.0
+            contact provisioning schema.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="check" type="contact:mIDType" substitutionGroup="epp:checkGroupType"/>
+    <xs:element name="create" type="contact:createType" substitutionGroup="epp:createGroupType"/>
+    <xs:element name="delete" type="contact:delSIDType" substitutionGroup="epp:deleteGroupType"/>
+    <xs:element name="info" type="contact:infoSIDType" substitutionGroup="epp:infoGroupType"/>
+    <xs:element name="update" type="contact:updateType" substitutionGroup="epp:updateGroupType"/>
+
+    <xs:simpleType name="ccType">
+        <xs:restriction base="xs:string">
+            <xs:length value="2"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="e164Type">
+        <xs:simpleContent>
+            <xs:extension base="contact:e164StringType">
+                <xs:attribute name="x" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="optE164Type">
+        <xs:simpleContent>
+            <xs:extension base="contact:optE164StringType">
+                <xs:attribute name="x" type="xs:string"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="e164StringType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(\+[0-9]{1,3}\.[0-9]{1,14})?"/>
+            <xs:minLength value="1"/>
+            <xs:maxLength value="17"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="optE164StringType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(\+[0-9]{1,3}\.[0-9]{1,14})?"/>
+            <xs:maxLength value="17"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="pcType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="16"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="postalLineType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="cityType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="spType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="128"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="createType">
+        <xs:complexContent>
+            <xs:extension base="epp:createGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                    <xs:element name="postalInfo" type="contact:postalInfoType" maxOccurs="2"/>
+                    <xs:element name="voice" type="contact:e164Type" minOccurs="0"/>
+                    <xs:element name="fax" type="contact:e164Type" minOccurs="0"/>
+                    <xs:element name="email" type="contact:postalLineType"/>
+                    <xs:element name="authInfo" type="contact:authInfoTypeWithoutRoid"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="postalInfoType">
+        <xs:sequence>
+            <xs:element name="name" type="contact:postalLineType"/>
+            <xs:element name="org" type="contact:postalLineType" minOccurs="0"/>
+            <xs:element name="addr" type="contact:addrType"/>
+        </xs:sequence>
+        <xs:attribute name="type" type="contact:postalInfoEnumType" use="required"/>
+    </xs:complexType>
+
+    <xs:simpleType name="postalInfoEnumType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="loc"/>
+            <xs:enumeration value="int"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="addrType">
+        <xs:sequence>
+            <xs:element name="street" type="contact:postalLineType" minOccurs="1" maxOccurs="3"/>
+            <xs:element name="city" type="contact:cityType"/>
+            <xs:element name="sp" type="contact:spType" minOccurs="0"/>
+            <xs:element name="pc" type="contact:pcType"/>
+            <xs:element name="cc" type="contact:ccType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="authInfoType">
+        <xs:choice>
+            <xs:element name="pw" type="eppcom:pwAuthInfoType"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="authInfoTypeWithoutRoid">
+        <xs:choice>
+            <xs:element name="pw" type="xs:string"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="infoSIDType">
+        <xs:complexContent>
+            <xs:extension base="epp:infoGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="delSIDType">
+        <xs:complexContent>
+            <xs:extension base="epp:deleteGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="mIDType">
+        <xs:complexContent>
+            <xs:extension base="epp:checkGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="updateType">
+        <xs:complexContent>
+            <xs:extension base="epp:updateGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                    <xs:element name="add" type="contact:addRemType" minOccurs="0"/>
+                    <xs:element name="rem" type="contact:addRemType" minOccurs="0"/>
+                    <xs:element name="chg" type="contact:chgType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="addRemType">
+        <xs:sequence>
+            <xs:element name="status" type="contact:statusType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="chgType">
+        <xs:sequence>
+            <xs:element name="postalInfo" type="contact:postalInfoType" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="voice" type="contact:optE164Type" minOccurs="0"/>
+            <xs:element name="fax" type="contact:optE164Type" minOccurs="0"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="authInfo" type="contact:authInfoTypeWithoutRoid" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="chkData" type="contact:chkDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="creData" type="contact:creDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="infData" type="contact:infDataType"  substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="chkDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="cd" type="contact:checkType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="checkType">
+        <xs:sequence>
+            <xs:element name="id" type="contact:checkIDType"/>
+            <xs:element name="reason" type="eppcom:reasonType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="checkIDType">
+        <xs:simpleContent>
+            <xs:extension base="eppcom:clIDType">
+                <xs:attribute name="avail" type="xs:boolean" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="creDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                    <xs:element name="crDate" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:clIDType"/>
+                    <xs:element name="roid" type="eppcom:roidType"/>
+                    <xs:element name="status" type="contact:statusType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="postalInfo" type="contact:postalInfoType" maxOccurs="2"/>
+                    <xs:element name="voice" type="contact:e164Type" minOccurs="0"/>
+                    <xs:element name="fax" type="contact:e164Type" minOccurs="0"/>
+                    <xs:element name="email" type="xs:string"/>
+                    <xs:element name="clID" type="eppcom:registrarIDType"/>
+                    <xs:element name="crID" type="eppcom:registrarIDType"/>
+                    <xs:element name="crDate" type="xs:dateTime"/>
+                    <xs:element name="upID" type="eppcom:registrarIDType" minOccurs="0"/>
+                    <xs:element name="upDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="trDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="authInfo" type="contact:authInfoType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="statusType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="s" type="contact:statusValueType" use="required"/>
+                <xs:attribute name="lang" type="xs:language" default="en"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="statusValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="clientDeleteProhibited"/>
+            <xs:enumeration value="clientUpdateProhibited"/>
+            <xs:enumeration value="linked"/>
+            <xs:enumeration value="ok"/>
+            <xs:enumeration value="serverDeleteProhibited"/>
+            <xs:enumeration value="serverUpdateProhibited"/>
+            <xs:enumeration value="clientTransferProhibited"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

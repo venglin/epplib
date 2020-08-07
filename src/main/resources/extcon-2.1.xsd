@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/extcon-2.1"
+           xmlns:extcon="http://www.dns.pl/nask-epp-schema/extcon-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:contact="http://www.dns.pl/nask-epp-schema/contact-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            NASK Extensible Provisioning Protocol v2.0
+            contact extension.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="create" type="extcon:cmdAllType" substitutionGroup="epp:cmdExtGroupType"/>
+    <xs:element name="update" type="extcon:cmdAllType" substitutionGroup="epp:cmdExtGroupType"/>
+    <xs:element name="infData" type="extcon:rspAllType" substitutionGroup="epp:rspExtGroupType"/>
+    <xs:element name="info" type="extcon:infoType" substitutionGroup="epp:cmdExtGroupType"/>
+    <xs:element name="delData" type="extcon:delDataType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="cmdAllType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="individual" type="xs:boolean" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="rspAllType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="individual" type="xs:boolean" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infoType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="authInfo" type="extcon:authInfoType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="authInfoType">
+        <xs:choice>
+            <xs:element name="pw" type="eppcom:pwAuthInfoType"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="delDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="id" type="eppcom:labelType" maxOccurs="unbounded"/>
+                    <xs:element name="executionDate" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

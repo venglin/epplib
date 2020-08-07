@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:annotation>
+        <xs:documentation>
+            Extensible Provisioning Protocol v2.0
+            shared structures schema.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:complexType name="pwAuthInfoType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="roid" type="eppcom:roidType"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:complexType name="extAuthInfoType">
+        <xs:sequence>
+            <xs:any namespace="##other"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="reasonType">
+        <xs:simpleContent>
+            <xs:extension base="eppcom:reasonBaseType">
+                <xs:attribute name="lang" type="xs:language"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+    <xs:simpleType name="reasonBaseType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="32"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="clIDType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="16"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="labelType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="minTokenType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="roidType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="(\w|_){1,80}-\w{1,8}"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="trStatusType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="clientApproved"/>
+            <xs:enumeration value="clientCancelled"/>
+            <xs:enumeration value="pending"/>
+            <xs:enumeration value="serverCancelled"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="registrarIDType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="256"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

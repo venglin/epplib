@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/extepp-2.1"
+           xmlns:extepp="http://www.dns.pl/nask-epp-schema/extepp-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            NASK Extensible Provisioning Protocol v2.0
+            EPP extension.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="passwdReminder" type="extepp:passwdReminderType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:element name="accountBalanceInsufficient" type="extepp:accountBalanceInsufficientType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="accountBalanceCrossed" type="extepp:accountBalanceCrossedType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="passwdReminderType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="exDate" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="accountBalanceInsufficientType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="accountLevel" type="xs:decimal"/>
+                    <xs:element name="accountType" type="extepp:typeAccountType"/>
+                    <xs:element name="serviceName" type="extepp:labelType"/>
+                    <xs:element name="name" type="extepp:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="accountBalanceCrossedType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="notificationLevel" type="xs:decimal"/>
+                    <xs:element name="accountType" type="extepp:typeAccountType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:simpleType name="labelType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+            <xs:maxLength value="255"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="typeAccountType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DOMAIN"/>
+            <xs:enumeration value="ENUM"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

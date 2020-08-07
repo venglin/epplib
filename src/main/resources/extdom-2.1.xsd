@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/extdom-2.1"
+           xmlns:extdom="http://www.dns.pl/nask-epp-schema/extdom-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+
+           xmlns:domain="http://www.dns.pl/nask-epp-schema/domain-2.1"
+           xmlns:contact="http://www.dns.pl/nask-epp-schema/contact-2.1"
+
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/domain-2.1" schemaLocation="domain-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/contact-2.1" schemaLocation="contact-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            NASK Extensible Provisioning Protocol v2.0
+            domain extension.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="create" type="extdom:createType" substitutionGroup="epp:cmdExtGroupType"/>
+    <xs:element name="renew" type="extdom:renewType" substitutionGroup="epp:cmdExtGroupType"/>
+    <xs:element name="dlgData" type="extdom:dlgDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="expData" type="extdom:expDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollAuthInfo" type="extdom:pollAuthInfoDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainBlocked" type="extdom:pollDomBlockType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainJudicialRemoved" type="extdom:pollDomJudRemType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainUnblocked" type="extdom:pollDomBlockType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollFutureRemoved" type="extdom:pollFutRemType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainAutoRenewed" type="extdom:pollDomainAutoRenewedType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainAutoRenewFailed" type="extdom:pollDomainAutoRenewFailedType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainLocked" type="extdom:pollDomainType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="pollDomainUnlocked" type="extdom:pollDomainType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="transfer" type="extdom:transferType" substitutionGroup="epp:cmdExtGroupType"/>
+
+    <xs:complexType name="createType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="book" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="renewType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="reactivate" minOccurs="0"/>
+                    <xs:element name="renewToDate" type="xs:date" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="dlgDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType" maxOccurs="unbounded"/>
+                    <xs:element name="ns" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="expDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType" maxOccurs="unbounded"/>
+                    <xs:element name="exDate" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollAuthInfoDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="domain" type="extdom:pollAuthInfoDomainType"/>
+                    <xs:element name="registrant" type="extdom:pollAuthInfoRegistrantType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollAuthInfoDomainType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="authInfo" type="extdom:authInfoType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="pollAuthInfoRegistrantType">
+        <xs:sequence>
+            <xs:element name="id" type="eppcom:clIDType"/>
+            <xs:element name="authInfo" type="extdom:authInfoType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="authInfoType">
+        <xs:choice>
+            <xs:element name="pw" type="eppcom:pwAuthInfoType"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="transferType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="resendConfirmationRequest" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollDomBlockType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="domain" type="extdom:pollBlockRemNameType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollDomJudRemType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="domain" type="extdom:pollBlockRemNameType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollFutRemType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="future" type="extdom:pollBlockRemNameType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollBlockRemNameType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="date" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="pollDomainAutoRenewedType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollDomainAutoRenewFailedType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="pollDomainType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="domain" type="extdom:domainType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="domainType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="date" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+</xs:schema>

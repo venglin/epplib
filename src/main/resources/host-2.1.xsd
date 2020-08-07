@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/host-2.1"
+           xmlns:host="http://www.dns.pl/nask-epp-schema/host-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Extensible Provisioning Protocol v2.0
+            host provisioning schema.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="check" type="host:mNameType" substitutionGroup="epp:checkGroupType"/>
+    <xs:element name="create" type="host:createType" substitutionGroup="epp:createGroupType"/>
+    <xs:element name="delete" type="host:delSNameType" substitutionGroup="epp:deleteGroupType"/>
+    <xs:element name="info" type="host:infoSNameType" substitutionGroup="epp:infoGroupType"/>
+    <xs:element name="update" type="host:updateType" substitutionGroup="epp:updateGroupType"/>
+
+    <xs:complexType name="createType">
+        <xs:complexContent>
+            <xs:extension base="epp:createGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="addr" type="host:addrType" minOccurs="0" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="addrType">
+        <xs:simpleContent>
+            <xs:extension base="host:addrStringType">
+                <xs:attribute name="ip" type="host:ipType" default="v4"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="addrStringType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="45"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="ipType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="v4"/>
+            <xs:enumeration value="v6"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="infoSNameType">
+        <xs:complexContent>
+            <xs:extension base="epp:infoGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="delSNameType">
+        <xs:complexContent>
+            <xs:extension base="epp:deleteGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="mNameType">
+        <xs:complexContent>
+            <xs:extension base="epp:checkGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="updateType">
+        <xs:complexContent>
+            <xs:extension base="epp:updateGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="add" type="host:addRemType" minOccurs="0"/>
+                    <xs:element name="rem" type="host:addRemType" minOccurs="0"/>
+                    <xs:element name="chg" type="host:chgType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="addRemType">
+        <xs:sequence>
+            <xs:element name="addr" type="host:addrType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="status" type="host:statusType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="chgType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="chkData" type="host:chkDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="creData" type="host:creDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="infData" type="host:infDataType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="chkDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="cd" type="host:checkType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="checkType">
+        <xs:sequence>
+            <xs:element name="name" type="host:checkNameType"/>
+            <xs:element name="reason" type="eppcom:reasonType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="checkNameType">
+        <xs:simpleContent>
+            <xs:extension base="eppcom:labelType">
+                <xs:attribute name="avail" type="xs:boolean" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="creDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="crDate" type="xs:dateTime"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="roid" type="eppcom:roidType"/>
+                    <xs:element name="status" type="host:statusType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="addr" type="host:addrType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="clID" type="eppcom:registrarIDType"/>
+                    <xs:element name="crID" type="eppcom:registrarIDType"/>
+                    <xs:element name="crDate" type="xs:dateTime"/>
+                    <xs:element name="upID" type="eppcom:registrarIDType" minOccurs="0"/>
+                    <xs:element name="upDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="trDate" type="xs:dateTime" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="statusType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="s" type="host:statusValueType" use="required"/>
+                <xs:attribute name="lang" type="xs:language" default="en"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="statusValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="clientDeleteProhibited"/>
+            <xs:enumeration value="clientUpdateProhibited"/>
+            <xs:enumeration value="ok"/>
+            <xs:enumeration value="pendingCreate"/>
+            <xs:enumeration value="pendingDelete"/>
+            <xs:enumeration value="serverDeleteProhibited"/>
+            <xs:enumeration value="serverUpdateProhibited"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

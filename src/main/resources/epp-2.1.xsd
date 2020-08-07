@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Extensible Provisioning Protocol v2.0 schema.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="epp" type="epp:eppType"/>
+
+    <xs:complexType name="eppType">
+        <xs:choice>
+            <xs:element name="greeting" type="epp:greetingType"/>
+            <xs:element name="hello" type="epp:helloType"/>
+            <xs:element name="command" type="epp:commandType"/>
+            <xs:element name="response" type="epp:responseType"/>
+            <xs:element name="extension" type="epp:extType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="greetingType">
+        <xs:sequence>
+            <xs:element name="svID" type="epp:sIDType"/>
+            <xs:element name="svDate" type="xs:dateTime"/>
+            <xs:element name="svcMenu" type="epp:svcMenuType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="helloType"/>
+
+    <xs:simpleType name="sIDType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="64"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="svcMenuType">
+        <xs:sequence>
+            <xs:element name="version" type="epp:versionType" maxOccurs="unbounded"/>
+            <xs:element name="lang" type="xs:language" maxOccurs="unbounded"/>
+            <xs:element name="objURI" type="xs:anyURI" maxOccurs="unbounded"/>
+            <xs:element name="svcExtension" type="epp:extURIType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="extType">
+        <xs:sequence>
+            <xs:element ref="epp:extGroupType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="extGroupType" type="epp:extGroupComplexType" />
+
+    <xs:complexType name="extGroupComplexType" abstract="true"/>
+
+    <xs:complexType name="extURIType">
+        <xs:sequence>
+            <xs:element name="extURI" type="xs:anyURI" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="versionType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="[1-9]+\.[0-9]+"/>
+            <xs:enumeration value="1.0"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="commandType">
+        <xs:sequence>
+            <xs:choice>
+                <xs:element name="check" type="epp:cmdCheckType"/>
+                <xs:element name="create" type="epp:cmdCreateType"/>
+                <xs:element name="delete" type="epp:cmdDeleteType"/>
+                <xs:element name="info" type="epp:cmdInfoType"/>
+                <xs:element name="login" type="epp:cmdLoginType"/>
+                <xs:element name="logout" type="epp:cmdLogoutType"/>
+                <xs:element name="poll" type="epp:cmdPollType"/>
+                <xs:element name="renew" type="epp:cmdRenewType"/>
+                <xs:element name="transfer" type="epp:cmdTransferType"/>
+                <xs:element name="update" type="epp:cmdUpdateType"/>
+            </xs:choice>
+            <xs:element name="extension" type="epp:cmdExtType" minOccurs="0"/>
+            <xs:element name="clTRID" type="epp:trIDStringType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="cmdCheckType">
+        <xs:sequence>
+            <xs:element ref="epp:checkGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="checkGroupType" type="epp:checkGroupComplexType" />
+
+    <xs:complexType name="checkGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdCreateType">
+        <xs:sequence>
+            <xs:element ref="epp:createGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="createGroupType" type="epp:createGroupComplexType" />
+
+    <xs:complexType name="createGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdDeleteType">
+        <xs:sequence>
+            <xs:element ref="epp:deleteGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="deleteGroupType" type="epp:deleteGroupComplexType" />
+
+    <xs:complexType name="deleteGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdInfoType">
+        <xs:sequence>
+            <xs:element ref="epp:infoGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="infoGroupType" type="epp:infoGroupComplexType" />
+
+    <xs:complexType name="infoGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdRenewType">
+        <xs:sequence>
+            <xs:element ref="epp:renewGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="renewGroupType" type="epp:renewGroupComplexType" />
+
+    <xs:complexType name="renewGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdUpdateType">
+        <xs:sequence>
+            <xs:element ref="epp:updateGroupType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="updateGroupType" type="epp:updateGroupComplexType" />
+
+    <xs:complexType name="updateGroupComplexType" abstract="true"/>
+
+
+    <xs:complexType name="cmdExtType">
+        <xs:sequence>
+            <xs:element ref="epp:cmdExtGroupType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="cmdExtGroupType" type="epp:cmdExtGroupComplexType" />
+
+    <xs:complexType name="cmdExtGroupComplexType" abstract="true"/>
+
+    <xs:complexType name="cmdLoginType">
+        <xs:sequence>
+            <xs:element name="clID" type="eppcom:registrarIDType"/>
+            <xs:element name="pw" type="epp:pwType"/>
+            <xs:element name="newPW" type="epp:pwType" minOccurs="0"/>
+            <xs:element name="options" type="epp:credsOptionsType"/>
+            <xs:element name="svcs" type="epp:loginSvcType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="credsOptionsType">
+        <xs:sequence>
+            <xs:element name="version" type="epp:versionType"/>
+            <xs:element name="lang" type="xs:language"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="pwType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="6"/>
+            <xs:maxLength value="64"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="loginSvcType">
+        <xs:sequence>
+            <xs:element name="objURI" type="xs:anyURI" maxOccurs="unbounded"/>
+            <xs:element name="svcExtension" type="epp:extURIType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="cmdLogoutType"/>
+
+    <xs:complexType name="cmdPollType">
+        <xs:attribute name="op" type="epp:pollOpType" use="required"/>
+        <xs:attribute name="msgID" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:simpleType name="pollOpType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ack"/>
+            <xs:enumeration value="req"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="cmdTransferType">
+        <xs:sequence>
+            <xs:element ref="epp:transferGroupType"/>
+        </xs:sequence>
+        <xs:attribute name="op" type="epp:transferOpType" use="required"/>
+    </xs:complexType>
+
+    <xs:element name="transferGroupType" type="epp:transferGroupComplexType" />
+
+    <xs:complexType name="transferGroupComplexType" abstract="true"/>
+
+    <xs:simpleType name="transferOpType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="approve"/>
+            <xs:enumeration value="cancel"/>
+            <xs:enumeration value="query"/>
+            <xs:enumeration value="reject"/>
+            <xs:enumeration value="request"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="trIDType">
+        <xs:sequence>
+            <xs:element name="clTRID" type="epp:trIDStringType" minOccurs="0"/>
+            <xs:element name="svTRID" type="epp:trIDStringType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="trIDStringType">
+        <xs:restriction base="xs:string">
+            <xs:minLength value="3"/>
+            <xs:maxLength value="64"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="responseType">
+        <xs:sequence>
+            <xs:element name="result" type="epp:resultType" maxOccurs="unbounded"/>
+            <xs:element name="msgQ" type="epp:msgQType" minOccurs="0"/>
+            <xs:element name="resData" type="epp:rspDataType" minOccurs="0"/>
+            <xs:element name="extension" type="epp:rspExtType" minOccurs="0"/>
+            <xs:element name="trID" type="epp:trIDType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="rspDataType">
+        <xs:sequence>
+            <xs:element ref="epp:rspDataGroupType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="rspDataGroupType" type="epp:rspDataGroupComplexType" />
+
+    <xs:complexType name="rspDataGroupComplexType" abstract="true"/>
+
+    <xs:complexType name="rspExtType">
+        <xs:sequence>
+            <xs:element ref="epp:rspExtGroupType" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="rspExtGroupType" type="epp:rspExtGroupComplexType" />
+
+    <xs:complexType name="rspExtGroupComplexType" abstract="true"/>
+
+    <xs:complexType name="resultType">
+        <xs:sequence>
+            <xs:element name="msg" type="epp:msgType"/>
+            <xs:element name="value" type="epp:errValueType" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element name="extValue" type="epp:extErrValueType" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="code" type="epp:resultCodeType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="errValueType">
+        <xs:sequence>
+            <xs:element name="add" type="xs:string" minOccurs="0"/>
+            <xs:element name="addr" type="xs:string" minOccurs="0"/>
+            <xs:element name="authInfo" type="xs:string" minOccurs="0"/>
+            <xs:element name="cc" type="xs:string" minOccurs="0"/>
+            <xs:element name="check" type="xs:string" minOccurs="0"/>
+            <xs:element name="chg" type="xs:string" minOccurs="0"/>
+            <xs:element name="city" type="xs:string" minOccurs="0"/>
+            <xs:element name="contact" type="xs:string" minOccurs="0"/>
+            <xs:element name="curExpDate" type="xs:string" minOccurs="0"/>
+            <xs:element name="email" type="xs:string" minOccurs="0"/>
+            <xs:element name="extURI" type="xs:string" minOccurs="0"/>
+            <xs:element name="fax" type="xs:string" minOccurs="0"/>
+            <xs:element name="id" type="xs:string" minOccurs="0"/>
+            <xs:element name="info" type="xs:string" minOccurs="0"/>
+            <xs:element name="lang" type="xs:string" minOccurs="0"/>
+            <xs:element name="newPassword" type="xs:string" minOccurs="0"/>
+            <xs:element name="name" type="xs:string" minOccurs="0"/>
+            <xs:element name="ns" type="xs:string" minOccurs="0"/>
+            <xs:element name="objURI" type="xs:string" minOccurs="0"/>
+            <xs:element name="org" type="xs:string" minOccurs="0"/>
+            <xs:element name="pc" type="xs:string" minOccurs="0"/>
+            <xs:element name="period" type="xs:string" minOccurs="0"/>
+            <xs:element name="pw" type="xs:string" minOccurs="0"/>
+            <xs:element name="reason" type="xs:string" minOccurs="0"/>
+            <xs:element name="registrant" type="xs:string" minOccurs="0"/>
+            <xs:element name="rem" type="xs:string" minOccurs="0"/>
+            <xs:element name="sp" type="xs:string" minOccurs="0"/>
+            <xs:element name="status" type="xs:string" minOccurs="0"/>
+            <xs:element name="street" type="xs:string" minOccurs="0"/>
+            <xs:element name="update" type="xs:string" minOccurs="0"/>
+            <xs:element name="version" type="xs:string" minOccurs="0"/>
+            <xs:element name="voice" type="xs:string" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="extErrValueType">
+        <xs:sequence>
+            <xs:element name="value" type="epp:reasonValueType"/>
+            <xs:element name="reason" type="epp:msgType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="reasonValueType">
+        <xs:sequence>
+            <xs:element name="reasonCode" type="xs:string"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="msgQType">
+        <xs:sequence>
+            <xs:element name="qDate" type="xs:dateTime" minOccurs="0"/>
+            <xs:element name="msg" type="epp:mixedMsgType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="count" type="xs:unsignedLong" use="required"/>
+        <xs:attribute name="id" type="eppcom:minTokenType" use="required"/>
+    </xs:complexType>
+
+    <xs:complexType name="mixedMsgType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="lang" type="xs:language" default="en"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="msgType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="lang" type="xs:language" default="en"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="resultCodeType">
+        <xs:restriction base="xs:unsignedShort">
+            <xs:enumeration value="1000"/>
+            <xs:enumeration value="1001"/>
+            <xs:enumeration value="1300"/>
+            <xs:enumeration value="1301"/>
+            <xs:enumeration value="1500"/>
+            <xs:enumeration value="2000"/>
+            <xs:enumeration value="2001"/>
+            <xs:enumeration value="2002"/>
+            <xs:enumeration value="2003"/>
+            <xs:enumeration value="2004"/>
+            <xs:enumeration value="2005"/>
+            <xs:enumeration value="2100"/>
+            <xs:enumeration value="2101"/>
+            <xs:enumeration value="2102"/>
+            <xs:enumeration value="2103"/>
+            <xs:enumeration value="2104"/>
+            <xs:enumeration value="2105"/>
+            <xs:enumeration value="2106"/>
+            <xs:enumeration value="2200"/>
+            <xs:enumeration value="2201"/>
+            <xs:enumeration value="2202"/>
+            <xs:enumeration value="2300"/>
+            <xs:enumeration value="2301"/>
+            <xs:enumeration value="2302"/>
+            <xs:enumeration value="2303"/>
+            <xs:enumeration value="2304"/>
+            <xs:enumeration value="2305"/>
+            <xs:enumeration value="2306"/>
+            <xs:enumeration value="2307"/>
+            <xs:enumeration value="2308"/>
+            <xs:enumeration value="2400"/>
+            <xs:enumeration value="2500"/>
+            <xs:enumeration value="2501"/>
+            <xs:enumeration value="2502"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

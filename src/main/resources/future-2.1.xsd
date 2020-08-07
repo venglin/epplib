@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/future-2.1"
+           xmlns:future="http://www.dns.pl/nask-epp-schema/future-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            Extensible Provisioning Protocol v2.0
+            future provisioning schema.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="check" type="future:mNameType" substitutionGroup="epp:checkGroupType"/>
+    <xs:element name="create" type="future:createType" substitutionGroup="epp:createGroupType"/>
+    <xs:element name="delete" type="future:sNameType" substitutionGroup="epp:deleteGroupType"/>
+    <xs:element name="info" type="future:infoType" substitutionGroup="epp:infoGroupType"/>
+    <xs:element name="renew" type="future:renewType" substitutionGroup="epp:renewGroupType"/>
+    <xs:element name="transfer" type="future:transferType" substitutionGroup="epp:transferGroupType"/>
+    <xs:element name="update" type="future:updateType" substitutionGroup="epp:updateGroupType"/>
+
+    <xs:complexType name="createType">
+        <xs:complexContent>
+            <xs:extension base="epp:createGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="period" type="future:periodType"/>
+                    <xs:element name="registrant" type="eppcom:clIDType"/>
+                    <xs:element name="authInfo" type="future:authInfoTypeWithoutRoid"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="periodType">
+        <xs:simpleContent>
+            <xs:extension base="future:pLimitType">
+                <xs:attribute name="unit" type="future:pUnitType" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="pLimitType">
+        <xs:restriction base="xs:unsignedShort">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="99"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="pUnitType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="y"/>
+            <xs:enumeration value="m"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="authInfoType">
+        <xs:choice>
+            <xs:element name="pw" type="eppcom:pwAuthInfoType"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="authInfoTypeWithoutRoid">
+        <xs:choice>
+            <xs:element name="pw" type="xs:string"/>
+            <xs:element name="ext" type="eppcom:extAuthInfoType"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="sNameType">
+        <xs:complexContent>
+            <xs:extension base="epp:deleteGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="mNameType">
+        <xs:complexContent>
+            <xs:extension base="epp:checkGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infoType">
+        <xs:complexContent>
+            <xs:extension base="epp:infoGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="future:infoNameType"/>
+                    <xs:element name="authInfo" type="future:authInfoType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infoNameType">
+        <xs:simpleContent>
+            <xs:extension base="eppcom:labelType">
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="renewType">
+        <xs:complexContent>
+            <xs:extension base="epp:renewGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="curExpDate" type="xs:date"/>
+                    <xs:element name="period" type="future:periodType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="transferType">
+        <xs:complexContent>
+            <xs:extension base="epp:transferGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="period" type="future:periodType" minOccurs="0"/>
+                    <xs:element name="authInfo" type="future:authInfoType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="updateType">
+        <xs:complexContent>
+            <xs:extension base="epp:updateGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="chg" type="future:chgType"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="chgType">
+        <xs:sequence>
+            <xs:element name="registrant" type="eppcom:clIDType" minOccurs="0"/>
+            <xs:element name="authInfo" type="future:authInfoTypeWithoutRoid" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="chkData" type="future:chkDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="creData" type="future:creDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="infData" type="future:infDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="renData" type="future:renDataType" substitutionGroup="epp:rspDataGroupType"/>
+    <xs:element name="trnData" type="future:trnDataType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="chkDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="cd" type="future:checkType" maxOccurs="unbounded"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="checkType">
+        <xs:sequence>
+            <xs:element name="name" type="future:checkNameType"/>
+            <xs:element name="reason" type="eppcom:reasonType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="checkNameType">
+        <xs:simpleContent>
+            <xs:extension base="eppcom:labelType">
+                <xs:attribute name="avail" type="xs:boolean" use="required"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:complexType name="creDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="crDate" type="xs:dateTime"/>
+                    <xs:element name="exDate" type="xs:dateTime" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="infDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="roid" type="eppcom:roidType"/>
+                    <xs:element name="status" type="future:statusType" minOccurs="0" maxOccurs="unbounded"/>
+                    <xs:element name="registrant" type="eppcom:clIDType" minOccurs="0"/>
+                    <xs:element name="clID" type="eppcom:registrarIDType"/>
+                    <xs:element name="crID" type="eppcom:registrarIDType" minOccurs="0"/>
+                    <xs:element name="crDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="upID" type="eppcom:registrarIDType" minOccurs="0"/>
+                    <xs:element name="upDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="exDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="trDate" type="xs:dateTime" minOccurs="0"/>
+                    <xs:element name="authInfo" type="future:authInfoType" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="renDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="exDate" type="xs:dateTime" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="trnDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="name" type="eppcom:labelType"/>
+                    <xs:element name="trStatus" type="eppcom:trStatusType"/>
+                    <xs:element name="reID" type="eppcom:registrarIDType"/>
+                    <xs:element name="reDate" type="xs:dateTime"/>
+                    <xs:element name="acID" type="eppcom:clIDType"/>
+                    <xs:element name="acDate" type="xs:dateTime"/>
+                    <xs:element name="exDate" type="xs:dateTime" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="statusType">
+        <xs:simpleContent>
+            <xs:extension base="xs:string">
+                <xs:attribute name="s" type="future:statusValueType" use="required"/>
+                <xs:attribute name="lang" type="xs:language" default="en"/>
+            </xs:extension>
+        </xs:simpleContent>
+    </xs:complexType>
+
+    <xs:simpleType name="statusValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="pending"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

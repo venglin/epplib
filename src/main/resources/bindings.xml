@@ -1,0 +1,118 @@
+<?xml version="1.0"?>
+<jxb:bindings version="1.0"
+              xmlns:jxb="http://java.sun.com/xml/ns/jaxb"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:namespace="http://jaxb2-commons.dev.java.net/namespace-prefix"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd
+			  http://jaxb2-commons.dev.java.net/namespace-prefix http://java.net/projects/jaxb2-commons/sources/svn/content/namespace-prefix/trunk/src/main/resources/prefix-namespace-schema.xsd">
+
+
+    <!-- NASK -->
+    <jxb:bindings schemaLocation="contact-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.contact"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="contact"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="domain-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.domain"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="domain"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="epp-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.epp"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="epp"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="eppcom-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.eppcom"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="eppcom"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="extcon-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.extcon"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="extcon"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="extdom-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.extdom"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="extdom"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="extepp-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.extepp"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="extepp"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="extfut-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.extfut"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="extfut"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="future-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.future"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="future"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="host-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.host"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="host"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="secDNS-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.secdns"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="secdns"/>
+        </jxb:bindings>
+    </jxb:bindings>
+
+    <jxb:bindings schemaLocation="extreport-2.1.xsd">
+        <jxb:schemaBindings>
+            <jxb:package name="pl.dns.nask_epp.extreport"/>
+        </jxb:schemaBindings>
+        <jxb:bindings>
+            <namespace:prefix name="extreport"/>
+        </jxb:bindings>
+    </jxb:bindings>
+</jxb:bindings>

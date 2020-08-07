@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/extfut-2.1"
+           xmlns:extfut="http://www.dns.pl/nask-epp-schema/extfut-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            NASK Extensible Provisioning Protocol v2.0
+            future extension.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="transfer" type="extfut:transferType" substitutionGroup="epp:cmdExtGroupType"/>
+
+    <xs:complexType name="transferType">
+        <xs:complexContent>
+            <xs:extension base="epp:cmdExtGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="resendConfirmationRequest" minOccurs="0"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>

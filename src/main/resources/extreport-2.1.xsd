@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema targetNamespace="http://www.dns.pl/nask-epp-schema/extreport-2.1"
+           xmlns:extreport="http://www.dns.pl/nask-epp-schema/extreport-2.1"
+           xmlns:eppcom="http://www.dns.pl/nask-epp-schema/eppcom-2.1"
+           xmlns:epp="http://www.dns.pl/nask-epp-schema/epp-2.1"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+
+           elementFormDefault="qualified">
+
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/eppcom-2.1" schemaLocation="eppcom-2.1.xsd"/>
+    <xs:import namespace="http://www.dns.pl/nask-epp-schema/epp-2.1" schemaLocation="epp-2.1.xsd"/>
+
+    <xs:annotation>
+        <xs:documentation>
+            NASK Extensible Provisioning Protocol v2.0
+            EPP extension.
+        </xs:documentation>
+    </xs:annotation>
+
+    <xs:element name="report" type="extreport:reportType" substitutionGroup="epp:extGroupType"/>
+
+    <xs:complexType name="reportType">
+        <xs:complexContent>
+            <xs:extension base="epp:extGroupComplexType">
+                <xs:sequence minOccurs="1" maxOccurs="1">
+                    <xs:choice>
+                        <xs:element name="domain" type="extreport:domain"/>
+                        <xs:element name="contact" type="extreport:contact"/>
+                        <xs:element name="host" type="extreport:host"/>
+                        <xs:element name="future" type="extreport:future"/>
+                        <xs:element name="prepaid" type="extreport:prepaid"/>
+                        <xs:element name="cancel" type="extreport:cancel"/>
+                        <xs:element name="getData" type="extreport:getdata"/>
+                    </xs:choice>
+                    <xs:element name="offset" minOccurs="0" maxOccurs="1" type="xs:int"/>
+                    <xs:element name="limit" minOccurs="0" maxOccurs="1" type="xs:int"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="domain">
+        <xs:sequence>
+            <xs:element name="state" minOccurs="0" maxOccurs="1" type="extreport:domainState"/>
+            <xs:element name="exDate" minOccurs="0" maxOccurs="1" type="xs:dateTime"/>
+            <xs:element name="statuses" minOccurs="0" maxOccurs="1" type="extreport:statuses"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name='statuses'>
+        <xs:sequence>
+            <xs:element name="status" minOccurs="1" maxOccurs="unbounded" type="extreport:statusValueType"/>
+        </xs:sequence>
+        <xs:attribute name="statusesIn" type="xs:boolean"/>
+    </xs:complexType>
+
+    <xs:simpleType name="domainState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="STATE_REGISTERED"/>
+            <xs:enumeration value="STATE_EXPIRED"/>
+            <xs:enumeration value="STATE_BLOCKED"/>
+            <xs:enumeration value="STATE_RESERVED"/>
+            <xs:enumeration value="STATE_BOOK_BLOCKED"/>
+            <xs:enumeration value="STATE_DELETE_BLOCKED"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="statusValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="clientDeleteProhibited"/>
+            <xs:enumeration value="clientHold"/>
+            <xs:enumeration value="clientRenewProhibited"/>
+            <xs:enumeration value="clientTransferProhibited"/>
+            <xs:enumeration value="clientUpdateProhibited"/>
+            <xs:enumeration value="serverDeleteProhibited"/>
+            <xs:enumeration value="serverHold"/>
+            <xs:enumeration value="serverRenewProhibited"/>
+            <xs:enumeration value="serverTransferProhibited"/>
+            <xs:enumeration value="serverUpdateProhibited"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="contact">
+        <xs:sequence>
+            <xs:element name="conId" minOccurs="0" maxOccurs="1" type="eppcom:clIDType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="host">
+        <xs:sequence>
+            <xs:element name="name" minOccurs="0" maxOccurs="1" type="eppcom:labelType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="future">
+        <xs:sequence>
+            <xs:element name="exDate" minOccurs="0" maxOccurs="1" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="prepaid">
+        <xs:sequence minOccurs="1" maxOccurs="1">
+            <xs:choice>
+                <xs:element name="payment" type="extreport:payment"/>
+                <xs:element name="paymentFunds" type="extreport:paymentFunds"/>
+            </xs:choice>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="payment">
+        <xs:sequence>
+            <xs:element name="accountType" minOccurs="0" maxOccurs="1" type="extreport:pAccountType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="paymentFunds">
+        <xs:sequence>
+            <xs:element name="accountType" minOccurs="0" maxOccurs="1" type="extreport:pAccountType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="pAccountType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="DOMAIN"/>
+            <xs:enumeration value="domain"/>
+            <xs:enumeration value="ENUM"/>
+            <xs:enumeration value="enum"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="cancel">
+        <xs:sequence>
+            <xs:element name="extreportId" minOccurs="0" maxOccurs="1" type="extreport:extreportIdType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="getdata">
+        <xs:sequence>
+            <xs:element name="extreportId" minOccurs="0" maxOccurs="1" type="extreport:extreportIdType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="extreportIdType">
+        <xs:restriction base="xs:string">
+            <xs:pattern value="([a-fA-F\d]{8}(-[a-fA-F\d]{4}){3}-[a-fA-F\d]{12})"/>
+            <xs:minLength value="1"/>
+            <xs:maxLength value="36"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="reportState">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="EXPIRED"/>
+            <xs:enumeration value="FAILED"/>
+            <xs:enumeration value="SUCCESS"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:element name="reportData" type="extreport:reportDataType" substitutionGroup="epp:rspExtGroupType"/>
+
+    <xs:complexType name="reportDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspExtGroupComplexType">
+                <xs:sequence>
+                    <xs:choice>
+                        <xs:element name="domDataRsp" minOccurs="0" maxOccurs="1" type="extreport:domDataExt"/>
+                        <xs:element name="conDataRsp" minOccurs="0" maxOccurs="1" type="extreport:conDataExt"/>
+                        <xs:element name="hosDataRsp" minOccurs="0" maxOccurs="1" type="extreport:hosDataExt"/>
+                        <xs:element name="futDataRsp" minOccurs="0" maxOccurs="1" type="extreport:futDataExt"/>
+                        <xs:element name="paymentDataRsp" minOccurs="0" maxOccurs="1" type="extreport:paymentDataExt"/>
+                        <xs:element name="paymentFundsDataRsp" minOccurs="0" maxOccurs="1"
+                                    type="extreport:paymentFundsDataExt"/>
+                        <xs:element name="receiveDataRsp" minOccurs="0" maxOccurs="1" type="extreport:receiveDataType"/>
+                    </xs:choice>
+                    <xs:element name="offset" minOccurs="0" maxOccurs="1" type="xs:int"/>
+                    <xs:element name="limit" minOccurs="0" maxOccurs="1" type="xs:int"/>
+                    <xs:element name="size" minOccurs="0" maxOccurs="1" type="xs:int"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <xs:complexType name="domDataExt">
+        <xs:sequence>
+            <xs:element name="domData" minOccurs="0" maxOccurs="unbounded" type="extreport:domDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="domDataType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="roid" type="eppcom:roidType"/>
+            <xs:element name="exDate" type="xs:dateTime"/>
+            <xs:element name="statuses" type="extreport:statusesRes"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name='statusesRes'>
+        <xs:sequence>
+            <xs:element name="status" minOccurs="0" maxOccurs="unbounded" type="extreport:statusResValueType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="statusResValueType">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="clientDeleteProhibited"/>
+            <xs:enumeration value="clientHold"/>
+            <xs:enumeration value="clientRenewProhibited"/>
+            <xs:enumeration value="clientTransferProhibited"/>
+            <xs:enumeration value="clientUpdateProhibited"/>
+            <xs:enumeration value="pendingTransfer"/>
+            <xs:enumeration value="serverDeleteProhibited"/>
+            <xs:enumeration value="serverHold"/>
+            <xs:enumeration value="serverRenewProhibited"/>
+            <xs:enumeration value="serverTransferProhibited"/>
+            <xs:enumeration value="serverUpdateProhibited"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="conDataExt">
+        <xs:sequence>
+            <xs:element name="conData" minOccurs="0" maxOccurs="unbounded" type="extreport:conDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="conDataType">
+        <xs:sequence>
+            <xs:element name="conId" type="eppcom:clIDType"/>
+            <xs:element name="roid" type="eppcom:roidType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="hosDataExt">
+        <xs:sequence>
+            <xs:element name="hosData" minOccurs="0" maxOccurs="unbounded" type="extreport:hosDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="hosDataType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="roid" type="eppcom:roidType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="futDataExt">
+        <xs:sequence>
+            <xs:element name="futData" minOccurs="0" maxOccurs="unbounded" type="extreport:futDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="futDataType">
+        <xs:sequence>
+            <xs:element name="name" type="eppcom:labelType"/>
+            <xs:element name="roid" type="eppcom:roidType"/>
+            <xs:element name="exDate" type="xs:dateTime"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="paymentDataExt">
+        <xs:sequence>
+            <xs:element name="paymentData" minOccurs="0" maxOccurs="unbounded" type="extreport:payDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="payDataType">
+        <xs:sequence>
+            <xs:element name="roid" type="eppcom:roidType"/>
+            <xs:element name="crDate" type="xs:dateTime"/>
+            <xs:element name="grossValue" type="xs:decimal"/>
+            <xs:element name="vatPercent" type="xs:decimal"/>
+            <xs:element name="vatValue" type="xs:decimal"/>
+            <xs:element name="initialFunds" type="xs:decimal"/>
+            <xs:element name="currentFunds" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="paymentFundsDataExt">
+        <xs:sequence>
+            <xs:element name="paymentFundsData" maxOccurs="unbounded" type="extreport:payFundsDataType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="payFundsDataType">
+        <xs:sequence>
+            <xs:element name="currentBalance" type="xs:decimal"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="receiveDataType">
+        <xs:sequence>
+            <xs:element name="extreportId" minOccurs="0" maxOccurs="1" type="extreport:extreportIdType"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:element name="extreportData" type="extreport:pollExtreportDataType" substitutionGroup="epp:rspDataGroupType"/>
+
+    <xs:complexType name="pollExtreportDataType">
+        <xs:complexContent>
+            <xs:extension base="epp:rspDataGroupComplexType">
+                <xs:sequence>
+                    <xs:element name="extreportId" minOccurs="0" maxOccurs="1" type="extreport:extreportIdType"/>
+                    <xs:element name="reportProcessingState" minOccurs="0" maxOccurs="1" type="extreport:reportState"/>
+                </xs:sequence>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+</xs:schema>
