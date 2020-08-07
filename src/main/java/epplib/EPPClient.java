@@ -61,6 +61,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import pl.dns.nask_epp.extcon.InfoType;
+import pl.dns.nask_epp.extcon.RspAllType;
 import epplib.exceptions.EPPLibException;
 import epplib.model.Contact;
 import epplib.model.Domain;
@@ -726,7 +727,7 @@ public class EPPClient {
 		c.setUpDate(contactInfo.getUpDate());
 		c.setUpId(contactInfo.getUpID());
 
-		CmdAllType contactExtInfo = getExtension(response);
+		RspAllType contactExtInfo = getExtension(response);
 		c.setIndividual(contactExtInfo.isIndividual());
 
 		return c;
