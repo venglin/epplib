@@ -1,13 +1,10 @@
 package epplib;
 
 import pl.dns.nask_epp.contact.*;
-import pl.dns.nask_epp.contact.CreDataType;
 import pl.dns.nask_epp.domain.ContactAttrType;
 import pl.dns.nask_epp.domain.HostsType;
 import pl.dns.nask_epp.domain.PUnitType;
-import pl.dns.nask_epp.domain.PeriodType;
 import pl.dns.nask_epp.epp.*;
-import pl.dns.nask_epp.epp.ObjectFactory;
 import pl.dns.nask_epp.eppcom.PwAuthInfoType;
 import pl.dns.nask_epp.extcon.CmdAllType;
 import pl.dns.nask_epp.future.AuthInfoTypeWithoutRoid;
@@ -60,7 +57,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
-import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import pl.dns.nask_epp.extcon.InfoType;
@@ -83,16 +80,7 @@ import epplib.model.messages.DomainMessage;
 import epplib.model.messages.ExpirationMessage;
 import epplib.model.messages.Message;
 import epplib.model.messages.TransferStatusMessage;
-import pl.dns.nask_epp.host.AddRemType;
-import pl.dns.nask_epp.host.AddrType;
-import pl.dns.nask_epp.host.CheckType;
-import pl.dns.nask_epp.host.ChgType;
-import pl.dns.nask_epp.host.ChkDataType;
-import pl.dns.nask_epp.host.CreateType;
-import pl.dns.nask_epp.host.InfDataType;
-import pl.dns.nask_epp.host.StatusType;
-import pl.dns.nask_epp.host.StatusValueType;
-import pl.dns.nask_epp.host.UpdateType;
+
 
 class AliasKeyManager implements X509KeyManager {
 
@@ -208,12 +196,8 @@ public class EPPClient {
 
 		LOGGER.debug(String.format("reponse code = %d, msg = '%s', reasons = '%s'", code, message, reasons != null ? reasons.toString() : ""));
 
-		if (code >= 2000) {
-            if (reasons != null)
-			    throw new EPPLibException(message + ": " + reasons.toString());
-            else
-                throw new EPPLibException(message);
-        }
+		if (code >= 2000)
+			throw new EPPLibException(message);
 
 		return code;
 	}
