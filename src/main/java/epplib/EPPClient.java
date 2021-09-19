@@ -2129,7 +2129,7 @@ public class EPPClient {
 	}
 
 	private SSLSocketFactory initTLS(KeyManager[] keyManagers, TrustManager[] trustManagers) throws NoSuchAlgorithmException, KeyManagementException {
-		SSLContext context = SSLContext.getInstance("TLS");
+		SSLContext context = SSLContext.getInstance("TLSv1.2");
 		context.init(keyManagers, trustManagers, null);
 		SSLSocketFactory socketFactory = context.getSocketFactory();
 
