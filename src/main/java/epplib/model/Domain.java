@@ -22,10 +22,34 @@ public class Domain extends EPPObject {
 	private DomainType type;
 	private Date exDate;
 
+	/**
+	 * DS records of the domain (DNSSEC). An empty list means the domain is
+	 * unsigned. The registry accepts at most six — see DNSSEC.MAX_DS_SIZE.
+	 */
+	private List<DsRecord> dsRecords;
+
 	public Domain(String name, String authInfo) {
 		this.name = name;
 		this.authInfo = authInfo;
 		nameservers = new ArrayList<Host>();
+		dsRecords = new ArrayList<DsRecord>();
+	}
+
+	public List<DsRecord> getDsRecords() {
+		return dsRecords;
+	}
+
+	public void setDsRecords(List<DsRecord> dsRecords) {
+		this.dsRecords = dsRecords == null ? new ArrayList<DsRecord>() : dsRecords;
+	}
+
+	public void addDsRecord(DsRecord dsRecord) {
+		dsRecords.add(dsRecord);
+	}
+
+	/** Whether the domain is signed, i.e. has at least one DS record. */
+	public boolean isSigned() {
+		return dsRecords != null && !dsRecords.isEmpty();
 	}
 
 	public void addNameserver(Host nameserver) {

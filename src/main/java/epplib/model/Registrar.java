@@ -4,6 +4,9 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Created by trou on 3/30/14.
+ */
 public class Registrar {
     private BigDecimal amountAvailable;
     private Integer hitPoints;

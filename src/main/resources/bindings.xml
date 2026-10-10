@@ -6,7 +6,6 @@
               xsi:schemaLocation="http://java.sun.com/xml/ns/jaxb http://java.sun.com/xml/ns/jaxb/bindingschema_2_0.xsd
 			  http://jaxb2-commons.dev.java.net/namespace-prefix http://java.net/projects/jaxb2-commons/sources/svn/content/namespace-prefix/trunk/src/main/resources/prefix-namespace-schema.xsd">
 
-
     <!-- NASK -->
     <jxb:bindings schemaLocation="contact-2.1.xsd">
         <jxb:schemaBindings>

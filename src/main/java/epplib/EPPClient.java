@@ -1,10 +1,13 @@
 package epplib;
 
 import pl.dns.nask_epp.contact.*;
+import pl.dns.nask_epp.contact.CreDataType;
 import pl.dns.nask_epp.domain.ContactAttrType;
 import pl.dns.nask_epp.domain.HostsType;
 import pl.dns.nask_epp.domain.PUnitType;
+import pl.dns.nask_epp.domain.PeriodType;
 import pl.dns.nask_epp.epp.*;
+import pl.dns.nask_epp.epp.ObjectFactory;
 import pl.dns.nask_epp.eppcom.PwAuthInfoType;
 import pl.dns.nask_epp.extcon.CmdAllType;
 import pl.dns.nask_epp.future.AuthInfoTypeWithoutRoid;
@@ -34,12 +37,12 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.KeyManager;
@@ -55,9 +58,10 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.DatatypeFactory;
 
-import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.log4j.Logger;
 
 import pl.dns.nask_epp.extcon.InfoType;
@@ -66,6 +70,7 @@ import epplib.exceptions.EPPLibException;
 import epplib.model.Contact;
 import epplib.model.Domain;
 import epplib.model.DomainContact;
+import epplib.model.DsRecord;
 import epplib.model.Future;
 import epplib.model.Host;
 import epplib.model.PostalAddress;
@@ -81,7 +86,16 @@ import epplib.model.messages.DomainMessage;
 import epplib.model.messages.ExpirationMessage;
 import epplib.model.messages.Message;
 import epplib.model.messages.TransferStatusMessage;
-
+import pl.dns.nask_epp.host.AddRemType;
+import pl.dns.nask_epp.host.AddrType;
+import pl.dns.nask_epp.host.CheckType;
+import pl.dns.nask_epp.host.ChgType;
+import pl.dns.nask_epp.host.ChkDataType;
+import pl.dns.nask_epp.host.CreateType;
+import pl.dns.nask_epp.host.InfDataType;
+import pl.dns.nask_epp.host.StatusType;
+import pl.dns.nask_epp.host.StatusValueType;
+import pl.dns.nask_epp.host.UpdateType;
 
 class AliasKeyManager implements X509KeyManager {
 
@@ -153,6 +167,7 @@ public class EPPClient {
 	private pl.dns.nask_epp.extdom.ObjectFactory extdomOF = new pl.dns.nask_epp.extdom.ObjectFactory();
 	private pl.dns.nask_epp.extfut.ObjectFactory extfutOF = new pl.dns.nask_epp.extfut.ObjectFactory();
 	private pl.dns.nask_epp.future.ObjectFactory futureOF = new pl.dns.nask_epp.future.ObjectFactory();
+	private pl.dns.nask_epp.secdns.ObjectFactory secdnsOF = new pl.dns.nask_epp.secdns.ObjectFactory();
 
 	private SSLSocketFactory factory;
 	private String url;
@@ -193,12 +208,32 @@ public class EPPClient {
 	private int checkResponseCode(EppType response) throws EPPLibException {
 		int code = response.getResponse().getResult().get(0).getCode();
 		String message = response.getResponse().getResult().get(0).getMsg().getValue();
+
+        // The registry puts the actual reason for a refusal in
+        // <extValue><reason>, e.g. "Host creation pending but it is not
+        // subordinate", while <msg> only describes the code in general terms
+        // ("Parameter value policy error"). The `reasons` variable was here
+        // from the start but nothing ever filled it, so the detail never left
+        // the library and the caller was left with the generic message.
         StringBuilder reasons = null;
+        for (var extValue : response.getResponse().getResult().get(0).getExtValue()) {
+            if (extValue.getReason() == null || extValue.getReason().getValue() == null)
+                continue;
+            if (reasons == null)
+                reasons = new StringBuilder();
+            else
+                reasons.append("; ");
+            reasons.append(extValue.getReason().getValue());
+        }
 
 		LOGGER.debug(String.format("reponse code = %d, msg = '%s', reasons = '%s'", code, message, reasons != null ? reasons.toString() : ""));
 
-		if (code >= 2000)
-			throw new EPPLibException(message);
+		if (code >= 2000) {
+            if (reasons != null)
+			    throw new EPPLibException(message + ": " + reasons.toString());
+            else
+                throw new EPPLibException(message);
+        }
 
 		return code;
 	}
@@ -237,7 +272,7 @@ public class EPPClient {
 
 	@SuppressWarnings("unchecked")
 	private <T> T doRequest(Object rootElement, boolean newSession) throws EPPLibException {
-		final String CTX = "pl.dns.nask_epp.epp:pl.dns.nask_epp.contact:pl.dns.nask_epp.domain:pl.dns.nask_epp.eppcom:pl.dns.nask_epp.extreport:pl.dns.nask_epp.host:pl.dns.nask_epp.extcon:pl.dns.nask_epp.host:pl.dns.nask_epp.extdom:pl.dns.nask_epp.extepp:pl.dns.nask_epp.extfut:pl.dns.nask_epp.future";
+		final String CTX = "pl.dns.nask_epp.epp:pl.dns.nask_epp.contact:pl.dns.nask_epp.domain:pl.dns.nask_epp.eppcom:pl.dns.nask_epp.extreport:pl.dns.nask_epp.host:pl.dns.nask_epp.extcon:pl.dns.nask_epp.host:pl.dns.nask_epp.extdom:pl.dns.nask_epp.extepp:pl.dns.nask_epp.extfut:pl.dns.nask_epp.future:pl.dns.nask_epp.secdns";
 
 		HttpURLConnection connection = null;
 		OutputStream ostream = null;
@@ -333,7 +368,7 @@ public class EPPClient {
 		checkSession();
 
 		if (contact == null || contact.getId() == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("contact with an id is required");
 
         pl.dns.nask_epp.contact.UpdateType update = new pl.dns.nask_epp.contact.UpdateType();
         pl.dns.nask_epp.contact.ChgType change = new pl.dns.nask_epp.contact.ChgType();
@@ -426,7 +461,7 @@ public class EPPClient {
 		checkSession();
 
 		if (id == null || (removeStatus == null && addStatus == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("id is required and at least one of removeStatus/addStatus must be given");
 
 		pl.dns.nask_epp.contact.AddRemType removeType = new pl.dns.nask_epp.contact.AddRemType();
         pl.dns.nask_epp.contact.AddRemType addType = new pl.dns.nask_epp.contact.AddRemType();
@@ -484,7 +519,7 @@ public class EPPClient {
 		checkSession();
 
 		if (ids == null || ids.isEmpty())
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("ids must not be empty");
 
 		MIDType mIdType = new MIDType();
 
@@ -518,7 +553,7 @@ public class EPPClient {
 		checkSession();
 
 		if (contact == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("contact is required");
 
 		pl.dns.nask_epp.contact.CreateType create = new pl.dns.nask_epp.contact.CreateType();
 
@@ -540,7 +575,7 @@ public class EPPClient {
 			throw new IllegalArgumentException("authinfo is null");
 
 		if (contact.getLocPostalInfo() == null && contact.getIntPostalInfo() == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("contact needs a local or international postal info");
 
 		if (contact.getLocPostalInfo() != null) {
 			PostalInfoType postalInfoType = new PostalInfoType();
@@ -620,7 +655,7 @@ public class EPPClient {
 		checkSession();
 
 		if (id == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("id is required");
 
         DelSIDType sIdType = new DelSIDType();
 		sIdType.setId(id);
@@ -650,7 +685,7 @@ public class EPPClient {
 		checkSession();
 
 		if (id == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("id is required");
 
 		InfoSIDType sIdType = new InfoSIDType();
 		sIdType.setId(id);
@@ -757,7 +792,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (registrant == null && authInfo == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of registrant/authInfo must be given");
 
 		pl.dns.nask_epp.domain.ChgType changeType = new pl.dns.nask_epp.domain.ChgType();
 		pl.dns.nask_epp.domain.UpdateType updateType = new pl.dns.nask_epp.domain.UpdateType();
@@ -815,7 +850,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (remove == null && add == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of remove/add must be given");
 
 		pl.dns.nask_epp.domain.AddRemType removeType = new pl.dns.nask_epp.domain.AddRemType();
 		pl.dns.nask_epp.domain.AddRemType addType = new pl.dns.nask_epp.domain.AddRemType();
@@ -862,7 +897,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (remove == null && add == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of remove/add must be given");
 
 		pl.dns.nask_epp.domain.AddRemType removeType = new pl.dns.nask_epp.domain.AddRemType();
 		pl.dns.nask_epp.domain.AddRemType addType = new pl.dns.nask_epp.domain.AddRemType();
@@ -901,7 +936,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (removeStatus == null && addStatus == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of removeStatus/addStatus must be given");
 
 		pl.dns.nask_epp.domain.AddRemType removeType = new pl.dns.nask_epp.domain.AddRemType();
 		pl.dns.nask_epp.domain.AddRemType addType = new pl.dns.nask_epp.domain.AddRemType();
@@ -969,7 +1004,7 @@ public class EPPClient {
 		checkSession();
 
 		if (names == null || names.isEmpty())
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("names must not be empty");
 
 		pl.dns.nask_epp.domain.MNameType mNameType = new pl.dns.nask_epp.domain.MNameType();
 
@@ -1011,7 +1046,7 @@ public class EPPClient {
 		checkSession();
 
 		if (d == null || d.getName() == null || d.getAuthInfo() == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("domain with name and authInfo is required");
 
 		pl.dns.nask_epp.domain.CreateType createType = new pl.dns.nask_epp.domain.CreateType();
 		createType.setName(d.getName());
@@ -1034,6 +1069,17 @@ public class EPPClient {
         CmdExtType cmdExtType = new CmdExtType();
         cmdExtType.getCmdExtGroupType().add(extdomOF.createCreate(extCreateType));
 
+		// DS records are attached only when present. An empty <secDNS:create>
+		// violates the schema: dsData has the default minOccurs of one.
+		if (d.isSigned()) {
+			requireDsLimit(d.getDsRecords());
+			pl.dns.nask_epp.secdns.CmdDsOrKeyType secDns = new pl.dns.nask_epp.secdns.CmdDsOrKeyType();
+			for (DsRecord ds : d.getDsRecords())
+				secDns.getDsData().add(toDsDataType(ds));
+
+			cmdExtType.getCmdExtGroupType().add(secdnsOF.createCreate(secDns));
+		}
+
         CmdCreateType cmdCreateType = new CmdCreateType();
         cmdCreateType.setCreateGroupType(domainOF.createCreate(createType));
 
@@ -1048,11 +1094,113 @@ public class EPPClient {
 		checkResponseCode(response);
 	}
 
+	/** Maximum DS records per domain — the DNSSEC.MAX_DS_SIZE parameter. */
+	public static final int MAX_DS_RECORDS = 6;
+
+	private void requireDsLimit(List<DsRecord> records) {
+		if (records != null && records.size() > MAX_DS_RECORDS)
+			throw new IllegalArgumentException("at most " + MAX_DS_RECORDS + " DS records are allowed");
+	}
+
+	private pl.dns.nask_epp.secdns.DsDataType toDsDataType(DsRecord ds) {
+		pl.dns.nask_epp.secdns.DsDataType out = new pl.dns.nask_epp.secdns.DsDataType();
+		out.setKeyTag(ds.getKeyTag());
+		out.setAlg(ds.getAlg());
+		out.setDigestType(ds.getDigestType());
+		out.setDigest(ds.getDigestBytes());
+		return out;
+	}
+
+	/**
+	 * Changes the DS records of a domain with a single {@code domain:update}.
+	 *
+	 * The registry fixes the element order: when a command carries both
+	 * {@code <secDNS:rem>} and {@code <secDNS:add>}, {@code rem} must come
+	 * first. The JAXB schema enforces that on its own because the fields are a
+	 * sequence, but it is worth knowing when reading the frames.
+	 *
+	 * @param removeAll drops every existing record; mutually exclusive with the
+	 *                  {@code remove} list
+	 */
+	public void eppDomainChangeDs(String name, List<DsRecord> remove, List<DsRecord> add, boolean removeAll)
+			throws EPPLibException {
+		checkSession();
+
+		if (name == null)
+			throw new IllegalArgumentException("name is required");
+		if (removeAll && remove != null && !remove.isEmpty())
+			throw new IllegalArgumentException("removeAll excludes an explicit remove list");
+
+		boolean hasRemove = removeAll || (remove != null && !remove.isEmpty());
+		boolean hasAdd = add != null && !add.isEmpty();
+		if (!hasRemove && !hasAdd)
+			throw new IllegalArgumentException("nothing to change");
+
+		requireDsLimit(add);
+
+		pl.dns.nask_epp.secdns.UpdateType secUpdate = new pl.dns.nask_epp.secdns.UpdateType();
+
+		if (hasRemove) {
+			pl.dns.nask_epp.secdns.RemType remType = new pl.dns.nask_epp.secdns.RemType();
+			if (removeAll)
+				remType.setAll(Boolean.TRUE);
+			else
+				for (DsRecord ds : remove)
+					remType.getDsData().add(toDsDataType(ds));
+
+			secUpdate.setRem(remType);
+		}
+
+		if (hasAdd) {
+			pl.dns.nask_epp.secdns.CmdDsOrKeyType addType = new pl.dns.nask_epp.secdns.CmdDsOrKeyType();
+			for (DsRecord ds : add)
+				addType.getDsData().add(toDsDataType(ds));
+
+			secUpdate.setAdd(addType);
+		}
+
+		// Rejestr wymaga nazwy domeny w samej komendzie domain:update, nawet gdy
+		// the whole change lives in the extension.
+		pl.dns.nask_epp.domain.UpdateType updateType = new pl.dns.nask_epp.domain.UpdateType();
+		updateType.setName(name);
+
+		CmdUpdateType cmdUpdateType = new CmdUpdateType();
+		cmdUpdateType.setUpdateGroupType(domainOF.createUpdate(updateType));
+
+		CmdExtType cmdExtType = new CmdExtType();
+		cmdExtType.getCmdExtGroupType().add(secdnsOF.createUpdate(secUpdate));
+
+		CommandType commandType = new CommandType();
+		commandType.setUpdate(cmdUpdateType);
+		commandType.setExtension(cmdExtType);
+
+		EppType eppType = new EppType();
+		eppType.setCommand(commandType);
+
+		EppType response = doRequest(eppOF.createEpp(eppType), false);
+		checkResponseCode(response);
+	}
+
+	/** Adds DS records, leaving the existing ones in place. */
+	public void eppDomainAddDs(String name, List<DsRecord> add) throws EPPLibException {
+		eppDomainChangeDs(name, null, add, false);
+	}
+
+	/** Usuwa wskazane rekordy DS. */
+	public void eppDomainRemoveDs(String name, List<DsRecord> remove) throws EPPLibException {
+		eppDomainChangeDs(name, remove, null, false);
+	}
+
+	/** Zdejmuje podpis z domeny — usuwa wszystkie rekordy DS. */
+	public void eppDomainRemoveAllDs(String name) throws EPPLibException {
+		eppDomainChangeDs(name, null, null, true);
+	}
+
 	public void eppDomainDelete(String name) throws EPPLibException {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.domain.SNameType sNameType = new pl.dns.nask_epp.domain.SNameType();
 		sNameType.setName(name);
@@ -1082,7 +1230,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.domain.InfoNameType infoNameType = new pl.dns.nask_epp.domain.InfoNameType();
 		infoNameType.setValue(name);
@@ -1152,8 +1300,38 @@ public class EPPClient {
 		d.setTrDate(domainInfo.getTrDate());
 		d.setUpDate(domainInfo.getUpDate());
 		d.setUpId(domainInfo.getUpID());
+		d.setDsRecords(readDsRecords(response));
 
 		return d;
+	}
+
+	/**
+	 * Wyjmuje rekordy DS z rozszerzenia odpowiedzi {@code domain:info}.
+	 *
+	 * The whole extension list is scanned rather than taking the first entry:
+	 * a response may carry several and their order is not guaranteed. A missing
+	 * extension simply means the domain is unsigned, which is not an error — an
+	 * empty list is returned.
+	 */
+	private List<DsRecord> readDsRecords(EppType response) {
+		List<DsRecord> out = new ArrayList<DsRecord>();
+
+		if (response.getResponse() == null || response.getResponse().getExtension() == null)
+			return out;
+
+		for (Object ext : response.getResponse().getExtension().getRspExtGroupType()) {
+			if (!(ext instanceof JAXBElement<?>))
+				continue;
+
+			Object value = ((JAXBElement<?>) ext).getValue();
+			if (!(value instanceof pl.dns.nask_epp.secdns.RspDsOrKeyType))
+				continue;
+
+			for (pl.dns.nask_epp.secdns.DsDataType ds : ((pl.dns.nask_epp.secdns.RspDsOrKeyType) value).getDsData())
+				out.add(DsRecord.fromBytes(ds.getKeyTag(), ds.getAlg(), ds.getDigestType(), ds.getDigest()));
+		}
+
+		return out;
 	}
 
 	public void eppDomainRemoveContacts(String name, List<DomainContact> contacts) throws EPPLibException {
@@ -1172,7 +1350,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || expDate == null || period == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name, expDate and period are required");
 
 		pl.dns.nask_epp.domain.RenewType renew = new pl.dns.nask_epp.domain.RenewType();
 		renew.setName(name);
@@ -1182,11 +1360,23 @@ public class EPPClient {
 		periodType.setValue(period);
 		renew.setPeriod(periodType);
 
+		// curExpDate is an xs:date and the registry compares it literally with
+		// the object's expiry date. Building an XMLGregorianCalendar from a
+		// GregorianCalendar appends a time zone, so "2027-08-29Z" went out
+		// instead of "2027-08-29" and the registry refused the renewal with
+		// code 2004 ("Parameter value syntax error").
+		//
+		// The former setTimeZone(UTC) after setTime() was a separate trap: it
+		// shifted the zone without adjusting the instant, so a date built as
+		// local midnight could slip back by one day.
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(expDate);
-		c.setTimeZone(TimeZone.getTimeZone("UTC"));
 		try {
-			renew.setCurExpDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			renew.setCurExpDate(DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
+					c.get(Calendar.YEAR),
+					c.get(Calendar.MONTH) + 1,
+					c.get(Calendar.DAY_OF_MONTH),
+					DatatypeConstants.FIELD_UNDEFINED));
 		} catch (DatatypeConfigurationException e) {
 			throw new EPPLibException(e);
 		}
@@ -1218,7 +1408,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.domain.TransferType transfer = new pl.dns.nask_epp.domain.TransferType();
 		transfer.setName(name);
@@ -1292,7 +1482,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (registrant == null && authInfo == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of registrant/authInfo must be given");
 
 		pl.dns.nask_epp.future.ChgType changeType = new pl.dns.nask_epp.future.ChgType();
 		pl.dns.nask_epp.future.UpdateType updateType = new pl.dns.nask_epp.future.UpdateType();
@@ -1326,7 +1516,7 @@ public class EPPClient {
 		checkSession();
 
 		if (names == null || names.isEmpty())
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("names must not be empty");
 
 		pl.dns.nask_epp.future.MNameType mNameType = new pl.dns.nask_epp.future.MNameType();
 
@@ -1362,7 +1552,7 @@ public class EPPClient {
 		checkSession();
 
 		if (f == null || f.getName() == null || f.getAuthInfo() == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("future with name and authInfo is required");
 
 		pl.dns.nask_epp.future.CreateType createType = new pl.dns.nask_epp.future.CreateType();
 		createType.setName(f.getName());
@@ -1398,7 +1588,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.future.SNameType sNameType = new pl.dns.nask_epp.future.SNameType();
 		sNameType.setName(name);
@@ -1420,7 +1610,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.future.InfoNameType infoNameType = new pl.dns.nask_epp.future.InfoNameType();
 		infoNameType.setValue(name);
@@ -1475,7 +1665,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || expDate == null || period == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name, expDate and period are required");
 
 		pl.dns.nask_epp.future.RenewType renew = new pl.dns.nask_epp.future.RenewType();
 		renew.setName(name);
@@ -1485,11 +1675,23 @@ public class EPPClient {
 		periodType.setValue(period);
 		renew.setPeriod(periodType);
 
+		// curExpDate is an xs:date and the registry compares it literally with
+		// the object's expiry date. Building an XMLGregorianCalendar from a
+		// GregorianCalendar appends a time zone, so "2027-08-29Z" went out
+		// instead of "2027-08-29" and the registry refused the renewal with
+		// code 2004 ("Parameter value syntax error").
+		//
+		// The former setTimeZone(UTC) after setTime() was a separate trap: it
+		// shifted the zone without adjusting the instant, so a date built as
+		// local midnight could slip back by one day.
 		GregorianCalendar c = new GregorianCalendar();
 		c.setTime(expDate);
-		c.setTimeZone(TimeZone.getTimeZone("UTC"));
 		try {
-			renew.setCurExpDate(DatatypeFactory.newInstance().newXMLGregorianCalendar(c));
+			renew.setCurExpDate(DatatypeFactory.newInstance().newXMLGregorianCalendarDate(
+					c.get(Calendar.YEAR),
+					c.get(Calendar.MONTH) + 1,
+					c.get(Calendar.DAY_OF_MONTH),
+					DatatypeConstants.FIELD_UNDEFINED));
 		} catch (DatatypeConfigurationException e) {
 			throw new EPPLibException(e);
 		}
@@ -1511,7 +1713,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		pl.dns.nask_epp.future.TransferType transfer = new pl.dns.nask_epp.future.TransferType();
 		transfer.setName(name);
@@ -1758,7 +1960,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (remove == null && add == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of remove/add must be given");
 
 		pl.dns.nask_epp.host.AddRemType removeType = new pl.dns.nask_epp.host.AddRemType();
 		pl.dns.nask_epp.host.AddRemType addType = new pl.dns.nask_epp.host.AddRemType();
@@ -1813,7 +2015,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || newName == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name and newName are required");
 
 		pl.dns.nask_epp.host.UpdateType updateType = new pl.dns.nask_epp.host.UpdateType();
 		pl.dns.nask_epp.host.ChgType chgType = new pl.dns.nask_epp.host.ChgType();
@@ -1839,7 +2041,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null || (removeStatus == null && addStatus == null))
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required and at least one of removeStatus/addStatus must be given");
 
 		pl.dns.nask_epp.host.AddRemType removeType = new pl.dns.nask_epp.host.AddRemType();
 		pl.dns.nask_epp.host.AddRemType addType = new pl.dns.nask_epp.host.AddRemType();
@@ -1897,7 +2099,7 @@ public class EPPClient {
 		checkSession();
 
 		if (names == null || names.isEmpty())
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("names must not be empty");
 
 		pl.dns.nask_epp.host.MNameType mNameType = new pl.dns.nask_epp.host.MNameType();
 
@@ -1931,7 +2133,7 @@ public class EPPClient {
 		checkSession();
 
 		if (h == null || h.getName() == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("host with a name is required");
 
 		pl.dns.nask_epp.host.CreateType createType = new pl.dns.nask_epp.host.CreateType();
 		createType.setName(h.getName());
@@ -1963,7 +2165,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		DelSNameType sNameType = new DelSNameType();
 		sNameType.setName(name);
@@ -1985,7 +2187,7 @@ public class EPPClient {
 		checkSession();
 
 		if (name == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("name is required");
 
 		InfoSNameType sNameType = new InfoSNameType();
 		sNameType.setName(name);
@@ -2044,13 +2246,23 @@ public class EPPClient {
 
 	public void eppLogin(String username, String password, String newPassword) throws EPPLibException {
 		final String EPP_VERSION = "1.0";
-		final String EPP_LANG = "pl";
+		// EPP session language. The registry offers "en" and "pl" (the <lang>
+		// element of the greeting), but one is chosen per session — a response
+		// always carries a single version of the message, never both. English
+		// keeps registry messages consistent with the rest of the technical
+		// logs.
+		final String EPP_LANG = "en";
 		final String[] EPP_NAMESPACES = { "http://www.dns.pl/nask-epp-schema/contact-2.1", "http://www.dns.pl/nask-epp-schema/host-2.1", "http://www.dns.pl/nask-epp-schema/domain-2.1",
 				"http://www.dns.pl/nask-epp-schema/future-2.1" };
-		final String[] EPP_EXT_NAMESPACES = { "http://www.dns.pl/nask-epp-schema/extcon-2.1", "http://www.dns.pl/nask-epp-schema/extdom-2.1" };
+		// secDNS-2.1 has to be declared at login, otherwise the registry
+		// rejects the DNSSEC extension in commands — and the refusal points at
+		// the command itself rather than the missing declaration, which sends
+		// you looking in the wrong place.
+		final String[] EPP_EXT_NAMESPACES = { "http://www.dns.pl/nask-epp-schema/extcon-2.1", "http://www.dns.pl/nask-epp-schema/extdom-2.1",
+				"http://www.dns.pl/nask-epp-schema/secDNS-2.1" };
 
 		if (username == null || password == null)
-			throw new IllegalArgumentException();
+			throw new IllegalArgumentException("username and password are required");
 
 		LoginSvcType svcs = new LoginSvcType();
 		ExtURIType exturi = new ExtURIType();
