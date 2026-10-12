@@ -172,6 +172,27 @@ public class EPPClient {
 	private SSLSocketFactory factory;
 	private String url;
 
+	/**
+	 * Socket timeouts for registry requests, in milliseconds.
+	 *
+	 * These must never be left at the JDK default, which is 0 — meaning no limit
+	 * at all. A registry that completes the TCP connection and the TLS handshake
+	 * but then sends no HTTP response leaves the reading thread parked in a
+	 * native read for as long as the connection stays open, which can be hours.
+	 * Callers that serialize access to a single client instance then stop
+	 * entirely, and the symptom looks nothing like its cause: connectivity,
+	 * certificate and DNS all test healthy while every request hangs.
+	 *
+	 * The read limit is deliberately far above any legitimate response time
+	 * (normal replies arrive in well under a second), because its job is to put
+	 * a ceiling on a stall, not to abort slow but valid work.
+	 */
+	private static final int DEFAULT_CONNECT_TIMEOUT_MS = 15_000;
+	private static final int DEFAULT_READ_TIMEOUT_MS = 60_000;
+
+	private int connectTimeout = DEFAULT_CONNECT_TIMEOUT_MS;
+	private int readTimeout = DEFAULT_READ_TIMEOUT_MS;
+
 	private boolean loggedIn = false;
 
 	public EPPClient() {
@@ -180,6 +201,30 @@ public class EPPClient {
 
 	public EPPClient(String url) {
 		this.url = url;
+	}
+
+	/**
+	 * Sets how long to wait for the TCP connection, in milliseconds.
+	 *
+	 * Zero means no limit; see the field documentation for why that is a trap.
+	 */
+	public void setConnectTimeout(int milliseconds) {
+		if (milliseconds < 0)
+			throw new IllegalArgumentException("connect timeout cannot be negative");
+
+		this.connectTimeout = milliseconds;
+	}
+
+	/**
+	 * Sets how long to wait for the registry's response, in milliseconds.
+	 *
+	 * Zero means no limit; see the field documentation for why that is a trap.
+	 */
+	public void setReadTimeout(int milliseconds) {
+		if (milliseconds < 0)
+			throw new IllegalArgumentException("read timeout cannot be negative");
+
+		this.readTimeout = milliseconds;
 	}
 
 	public EPPClient(String url, String keyStoreFileName, String keyStorePassword, String trustStoreFileName, String trustStorePassword, String alias)
@@ -288,6 +333,8 @@ public class EPPClient {
 			connection = (HttpURLConnection) urlc.openConnection();
 			if (connection instanceof HttpsURLConnection && factory != null)
 				((HttpsURLConnection) connection).setSSLSocketFactory(factory);
+			connection.setConnectTimeout(connectTimeout);
+			connection.setReadTimeout(readTimeout);
 			connection.setDoOutput(true);
 			connection.setDoInput(true);
 			connection.setRequestMethod("POST");

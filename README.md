@@ -62,6 +62,30 @@ client.eppLogin("registrar", "oldPassword", "newPassword");
 `eppHello()` sends a greeting without a session — useful as a connectivity
 check.
 
+## Timeouts
+
+Requests wait 15 seconds for the connection and 60 seconds for the response.
+Both can be changed, and the read limit is the one worth thinking about:
+
+```java
+client.setConnectTimeout(15_000);
+client.setReadTimeout(60_000);
+```
+
+The defaults exist because the JDK has none. An `HttpURLConnection` left alone
+waits without limit, and a registry that completes the TCP connection and the
+TLS handshake but then sends no HTTP response will park the calling thread in a
+socket read for as long as it keeps the connection open. The failure is easy to
+misread: connectivity, certificate and DNS all test healthy, yet every request
+hangs, and an application that serializes registry access through one client
+instance stops answering entirely because each new request queues behind the
+first.
+
+Raise the read limit rather than removing it. Sixty seconds is already far
+above any normal response — replies usually arrive in well under a second — so
+its purpose is to put a ceiling on a stall, not to cut short slow but valid
+work. Zero restores the unlimited behaviour and is almost never what you want.
+
 ## Contacts
 
 A domain needs a registrant contact, created beforehand:
